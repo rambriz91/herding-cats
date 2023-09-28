@@ -1,0 +1,25 @@
+{
+  "name": "herding-cats",
+  "version": "1.0.0",
+  "description": "## Your Task",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rambriz91/herding-cats.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rambriz91/herding-cats/issues"
+  },
+  "homepage": "https://github.com/rambriz91/herding-cats#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "inquirer": "^8.2.4",
+    "mysql2": "^3.6.1"
+  }
+}
