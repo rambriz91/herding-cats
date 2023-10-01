@@ -1,7 +1,26 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
-const {db} = require('./server');
-const { QueryTypes } = require('sequelize');
+
+//filters managers from db.
+const managers = db.query(`SELECT id, CONCAT(first_name , " ", last_name) 
+AS manager 
+FROM employee 
+WHERE role_id IN (12, 2, 3, 14, 8, 7) 
+ORDER BY id;`)
+;
+//insert mysql password to create connection
+const db = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'Foolish1',
+    database: 'employees_db'
+});
+
+db.connect((err) => {
+    if (err) throw err;
+    console.log('Accessing employee database');
+    init();
+});
 
 function init() {
     inquirer
@@ -41,7 +60,7 @@ function init() {
                     
                     break;
                 case 'Quit':
-                    connection.end();
+                    db.end();
                     
                     break;
             }
@@ -49,7 +68,7 @@ function init() {
 };
 
 function viewEmployees() {
-    const sql = `SELECT * FROM employee`;
+    const sql = 'SELECT * FROM employee';
     db.query(sql, (err, res) => {
         if (err) throw err;
         console.log(res);
@@ -57,4 +76,26 @@ function viewEmployees() {
     });
 };
 
-module.exports = {init};
+function addEmployee() {
+    inquirer
+        .prompt(
+            {
+                type:'input',
+                name:'first',
+                message:`Enter your employee's first name.`
+            },
+            {
+                type:'input',
+                name:'last',
+                message:`Enter your employee's last name.`
+            },
+            {
+                type:'list',
+                name:'role',
+                message: `Enter your employee's role.`,
+                choices: []
+            }
+        );
+    const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+    VALUES (${employee.first_name}, ${employee.last_name}, ${role_id}, ${manager_id})`
+}
