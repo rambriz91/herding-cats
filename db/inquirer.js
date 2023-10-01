@@ -1,6 +1,7 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const {db} = require('./server');
+const { QueryTypes } = require('sequelize');
 
 function init() {
     inquirer
@@ -48,8 +49,8 @@ function init() {
 };
 
 function viewEmployees() {
-    const command = `SELECT * FROM employee`;
-    db.query(command, (err, res) => {
+    const sql = `SELECT * FROM employee`;
+    db.query(sql, (err, res) => {
         if (err) throw err;
         console.log(res);
         init();
