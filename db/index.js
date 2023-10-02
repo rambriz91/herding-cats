@@ -53,22 +53,42 @@ function init() {
                     viewDepartments();
                     break;
                 case 'Add Department':
-                    
+                    addDepartment();
                     break;
                 case 'Quit':
                     db.end();
                     console.log('bye! 😊')
-                    
                     break;
             }
         })
 };
 
+//Engine for view query fxns
+function viewQuery(sql) {
+    db.query(sql, (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        init();
+    });
+}
+
+//view Query functions
 function viewEmployees() {
     const sql = 'SELECT * FROM employee';
-  viewQuery(sql);
+    viewQuery(sql);
 };
 
+function viewRoles() {
+    const sql = `SELECT id, title, salary, department_id FROM roles`;
+    viewQuery(sql);
+};
+
+function viewDepartments() {
+    const sql = 'SELECT * FROM department';
+    viewQuery(sql);
+};
+
+//Add functions
 function addEmployee() {
     let roles = [];
     let managers = [];
@@ -162,14 +182,7 @@ function addEmployee() {
                 });
             });
     }
-
-    // Call the function to get managers and roles.
     getManagersAndRoles();
-};
-
-function viewRoles() {
-    const sql = `SELECT id, title, salary, department_id FROM roles`;
-    viewQuery(sql);
 };
 
 function addRole() {
@@ -244,15 +257,28 @@ function addRole() {
     getDepartment();
 };
 
-function viewDepartments() {
-    const sql = 'SELECT * FROM department';
-    viewQuery(sql);
+function addDepartment() {
+    inquirer
+        .prompt([
+            {
+                type: 'input',
+                name: 'department',
+                message: 'What is the name of this new department?'
+            }
+        ])
+        .then((data)=>{
+            const {department} = data;
+            const sql = `INSERT INTO department(dept_name)
+                VALUES (?)`;
+            db.query(sql, department, (err, res)=> {
+                if (err) {
+                    console.error(err);
+                } else {
+                    console.log(`${department} added to the database.`);
+                    init();
+                }
+            })
+        })
 };
 
-function viewQuery(sql) {
-    db.query(sql, (err, res) => {
-        if (err) throw err;
-        console.table(res);
-        init();
-    });
-}
+
