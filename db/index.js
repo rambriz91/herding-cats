@@ -44,7 +44,7 @@ function init() {
                     addEmployee();
                     break;
                 case 'View All Roles':
-                    
+                    viewRoles();
                     break;
                 case 'Add Role':
                     
@@ -169,5 +169,13 @@ function addEmployee() {
 
     // Call the function to get managers and roles.
     getManagersAndRoles();
-}
-    
+};
+
+function viewRoles() {
+    const sql = `SELECT id, title, salary, department_id FROM roles`;
+    db.query(sql, (err, res) =>{
+        if (err) throw err;
+        console.table(res);
+        init();
+    })
+};
