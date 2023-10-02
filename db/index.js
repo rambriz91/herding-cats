@@ -66,11 +66,7 @@ function init() {
 
 function viewEmployees() {
     const sql = 'SELECT * FROM employee';
-    db.query(sql, (err, res) => {
-        if (err) throw err;
-        console.table(res);
-        init();
-    });
+  viewQuery(sql);
 };
 
 function addEmployee() {
@@ -173,11 +169,7 @@ function addEmployee() {
 
 function viewRoles() {
     const sql = `SELECT id, title, salary, department_id FROM roles`;
-    db.query(sql, (err, res) =>{
-        if (err) throw err;
-        console.table(res);
-        init();
-    })
+    viewQuery(sql);
 };
 
 function addRole() {
@@ -251,11 +243,16 @@ function addRole() {
     }
     getDepartment();
 };
+
 function viewDepartments() {
     const sql = 'SELECT * FROM department';
+    viewQuery(sql);
+};
+
+function viewQuery(sql) {
     db.query(sql, (err, res) => {
         if (err) throw err;
         console.table(res);
         init();
     });
-};
+}
