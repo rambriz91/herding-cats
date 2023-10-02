@@ -47,10 +47,10 @@ function init() {
                     viewRoles();
                     break;
                 case 'Add Role':
-                    
+                    addRole();
                     break;
                 case 'View All Departments':
-                    
+                    viewDepartments();
                     break;
                 case 'Add Department':
                     
@@ -178,4 +178,84 @@ function viewRoles() {
         console.table(res);
         init();
     })
+};
+
+function addRole() {
+    let departments = [];
+    async function getDepartment() {
+        try {
+        //query for departments.
+        const departmentsQuery = await new Promise((resolve, reject) => {
+        db.query('SELECT id, dept_name FROM department', (err, res) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(res);
+            }
+        })
+        });
+
+        departments = departmentsQuery.map(({ id, dept_name }) => ({
+            name: dept_name,
+            value: id,
+        }));
+        promptUserInput();
+    }
+        catch (err){
+            console.error(err);
+        }
+    }
+    function promptUserInput() {
+        inquirer
+            .prompt([
+                {
+                    type: 'input',
+                    name: 'title',
+                    message: 'What is the title of this new role?'
+                },
+                {
+                    type: 'number',
+                    name: 'salary',
+                    message: 'Select a salary range between 50,000.00 and 300,000.00 for this role.',
+                    validate: async (number) => {
+                        if (number <= 300000 && number >= 50000) {
+                            return true;
+                            
+                        } else {
+                            console.log('Salary must be between 50,000 and 300,000!');
+                            return false;
+                        }
+                    }
+                },
+                {
+                    type: 'list',
+                    name: 'department',
+                    message: 'Which department does this role belong to?',
+                    choices: departments
+                }
+            ])
+            .then((data)=> {
+                const {title, salary, department} = data;
+                const sql = `INSERT INTO roles (title, salary, department_id)
+                VALUES (?, ?, ?)`;
+                const values = [title, salary, department];
+                db.query(sql, values, (err, res) => {
+                    if (err) {
+                        console.error(err);
+                    } else {
+                        console.log(`${title} added to ${department} in the database.`);
+                        init();
+                    }
+                })
+            })
+    }
+    getDepartment();
+};
+function viewDepartments() {
+    const sql = 'SELECT * FROM department';
+    db.query(sql, (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        init();
+    });
 };
