@@ -29,6 +29,7 @@ function init() {
                 'Add Employee',
                 'View All Roles',
                 'Add Role',
+                'Update An Employee Role',
                 'View All Departments',
                 'Add Department',
                 'Quit'
@@ -48,6 +49,9 @@ function init() {
                     break;
                 case 'Add Role':
                     addRole();
+                    break;
+                case 'Update An Employee Role':
+                    updateEmployeeRole();
                     break;
                 case 'View All Departments':
                     viewDepartments();
@@ -74,7 +78,7 @@ function viewQuery(sql) {
 
 //view Query functions
 function viewEmployees() {
-    const sql = `SELECT e.id, e.first_name, e.last_name, r.title, r.salary, d.dept_name, CONCAT(m.first_name, ' ', m.last_name) AS Manager 
+    const sql = `SELECT e.id, e.first_name, e.last_name, r.title, r.salary, d.dept_name, CONCAT(m.first_name, ' ', m.last_name) AS manager 
     FROM employee e 
     LEFT JOIN roles r ON e.role_id = r.id 
     LEFT JOIN department d ON r.department_id = d.id 
@@ -83,7 +87,8 @@ function viewEmployees() {
 };
 
 function viewRoles() {
-    const sql = `SELECT id, title, salary, department_id FROM roles`;
+    const sql = `SELECT r.id, r.title, d.dept_name AS department, r.salary FROM roles r
+        LEFT JOIN department d ON r.department_id = d.id`;
     viewQuery(sql);
 };
 
@@ -243,8 +248,11 @@ function addRole() {
                     choices: departments
                 }
             ])
-            .then((data)=> {
+            .then( async (data)=> {
                 const {title, salary, department} = data;
+                //retrieves dept name by id.
+                const dept = departments.find(d => d.value === department).name;
+
                 const sql = `INSERT INTO roles (title, salary, department_id)
                 VALUES (?, ?, ?)`;
                 const values = [title, salary, department];
@@ -252,7 +260,7 @@ function addRole() {
                     if (err) {
                         console.error(err);
                     } else {
-                        console.log(`${title} added to ${department} in the database.`);
+                        console.log(`${title} added to ${dept} in the database.`);
                         init();
                     }
                 })
@@ -285,4 +293,77 @@ function addDepartment() {
         })
 };
 
+function updateEmployeeRole() {
+    let employee = [];
+    const sqlE = `SELECT id, CONCAT(first_name, ' ', last_name) AS emp_name FROM employee`;
+    const sqlR = `SELECT id, title FROM roles`;
+    async function getEmployeeAndRole() {
+        try {
+            const employeeQuery = await new Promise((resolve, reject) => {
+                db.query(sqlE, (err, res) =>{
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                } )
+            })
+            employee = employeeQuery.map(({id, emp_name})=> ({
+                name: emp_name,
+                value: id
+            }))
+            const rolesQuery = await new Promise((resolve, reject) => {
+                db.query(sqlR, (err, res) =>{
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+            })
+            role = rolesQuery.map(({id,title})=> ({
+                name: title,
+                value: id
+            }))
+            promptUserInput();
+        } catch (err) {
+            console.error(err);
+        }
+    }
+    function promptUserInput() {
+        inquirer
+            .prompt([
+                {
+                    type:'list',
+                    name: 'employeeID',
+                    message: `Select an employee that you would like to update the role for.`,
+                    choices: employee
+                },
+                {
+                    type: 'list',
+                    name: 'roleID',
+                    message: `Select a new role for this employee`,
+                    choices: role
+                }
+            ])
+            .then( async (data)=> {
+                const {employeeID, roleID} = data;
+
+                //retreives the emloyee's name and new role using IDs.
+                const empName = employee.find(emp => emp.value === employeeID).name;
+                const roleTitle = role.find(rl => rl.value === roleID).name;
+
+                const sql =`UPDATE employee SET role_id = ${roleID} WHERE id = ${employeeID}`;
+                db.query(sql, (err, res)=> {
+                    if (err) {
+                        console.error(err);
+                    } else {
+                        console.log(`${empName}'s role was updated to ${roleTitle}.`);
+                        init();
+                    }
+                })
+            });
+    };
+    getEmployeeAndRole();
+};
 
